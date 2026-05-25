@@ -3,43 +3,62 @@ import json
 
 def load_data(file_path):
     """Load and return JSON data from a file."""
-    with open(file_path, "r") as handle:
+    with open(file_path, "r", encoding="utf-8") as handle:
         return json.load(handle)
 
 
 def load_template(file_path):
     """Read and return the HTML template as text."""
-    with open(file_path, "r") as handle:
+    with open(file_path, "r", encoding="utf-8") as handle:
         return handle.read()
 
 
-def serialize_animal(animal):
-    """Return one animal serialized as an HTML list item."""
-    lines = []
+def normalize_animal_name(name):
+    """Normalize known mojibake/unicode apostrophe issues in animal names."""
+    if not name:
+        return name
 
-    name = animal.get("name")
-    if name:
-        lines.append(f"Name: {name}")
+    normalized = name.replace("â€™", "'").replace("’", "'")
+    if normalized.lower() == "darwin's fox":
+        return "Darwin's Fox"
+    return normalized
+
+
+def serialize_animal(animal):
+    """Return one animal serialized as a styled HTML card item."""
+    details = []
+
+    name = normalize_animal_name(animal.get("name"))
 
     characteristics = animal.get("characteristics", {})
 
     diet = characteristics.get("diet")
     if diet:
-        lines.append(f"Diet: {diet}")
+        details.append(f"<strong>Diet:</strong> {diet}")
 
     locations = animal.get("locations", [])
     if locations:
-        lines.append(f"Location: {locations[0]}")
+        details.append(f"<strong>Location:</strong> {locations[0]}")
 
     animal_type = characteristics.get("type")
     if animal_type:
-        lines.append(f"Type: {animal_type}")
+        details.append(f"<strong>Type:</strong> {animal_type}")
 
-    if not lines:
+    if not name and not details:
         return ""
 
-    lines_html = "<br/>\n".join(lines) + "<br/>"
-    return f"<li class=\"cards__item\">\n{lines_html}\n</li>"
+    details_html = "<br/>\n      ".join(details)
+    if details_html:
+        details_html += "<br/>"
+
+    return (
+        "<li class=\"cards__item\">\n"
+        f"  <div class=\"card__title\">{name}</div>\n"
+        "  <p class=\"card__text\">\n"
+        f"      {details_html}\n"
+        "  </p>\n"
+        "</li>"
+    )
 
 
 def serialize_animals(animals_data):
@@ -55,7 +74,7 @@ def main():
     animals_info = serialize_animals(animals_data)
     final_html = template_html.replace("__REPLACE_ANIMALS_INFO__", animals_info)
 
-    with open("animals.html", "w") as output_file:
+    with open("animals.html", "w", encoding="utf-8") as output_file:
         output_file.write(final_html)
 
 
