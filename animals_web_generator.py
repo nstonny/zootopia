@@ -14,7 +14,7 @@ def load_template(file_path):
 
 
 def serialize_animal(animal):
-    """Return a text block for one animal, omitting missing fields."""
+    """Return one animal serialized as an HTML list item."""
     lines = []
 
     name = animal.get("name")
@@ -35,13 +35,17 @@ def serialize_animal(animal):
     if animal_type:
         lines.append(f"Type: {animal_type}")
 
-    return "\n".join(lines)
+    if not lines:
+        return ""
+
+    lines_html = "<br/>\n".join(lines) + "<br/>"
+    return f"<li class=\"cards__item\">\n{lines_html}\n</li>"
 
 
 def serialize_animals(animals_data):
-    """Return all animals as one text block separated by blank lines."""
+    """Return all animals as HTML list items."""
     animal_blocks = [serialize_animal(animal) for animal in animals_data]
-    return "\n\n".join(block for block in animal_blocks if block)
+    return "\n".join(block for block in animal_blocks if block)
 
 
 def main():
