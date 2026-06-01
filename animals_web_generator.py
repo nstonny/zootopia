@@ -1,4 +1,6 @@
 import os
+from html import escape
+
 import requests
 from dotenv import load_dotenv
 
@@ -90,6 +92,16 @@ def build_message_card(message):
     )
 
 
+def build_not_found_message(animal_name):
+    """Return a formatted not-found message for unknown animal names."""
+    safe_name = escape(animal_name)
+    return (
+        "<li class=\"cards__item\">\n"
+        f"  <h2>The animal \"{safe_name}\" doesn't exist.</h2>\n"
+        "</li>"
+    )
+
+
 def get_user_animal_name():
     """Prompt until the user enters a non-empty animal name."""
     while True:
@@ -116,7 +128,7 @@ def main():
             animals_info = (
                 serialize_animals(animals_data)
                 if animals_data
-                else build_message_card(f"No animals found for '{name}'.")
+                else build_not_found_message(name)
             )
         except requests.RequestException as error:
             animals_info = build_message_card(f"API request failed: {error}")
