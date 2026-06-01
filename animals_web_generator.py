@@ -90,11 +90,20 @@ def build_message_card(message):
     )
 
 
+def get_user_animal_name():
+    """Prompt until the user enters a non-empty animal name."""
+    while True:
+        name = input("Enter a name of an animal: ").strip()
+        if name:
+            return name
+        print("Animal name cannot be empty. Please try again.")
+
+
 def main():
     load_dotenv()
 
     template_html = load_template("animals_template.html")
-    name = os.getenv("ANIMAL_QUERY", "fox")
+    name = get_user_animal_name()
     api_key = os.getenv("API_NINJAS_API_KEY")
 
     if not api_key:
@@ -116,7 +125,6 @@ def main():
 
     with open("animals.html", "w", encoding="utf-8") as output_file:
         output_file.write(final_html)
-
 
 if __name__ == "__main__":
     main()
