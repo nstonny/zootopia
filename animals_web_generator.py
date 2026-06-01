@@ -1,16 +1,16 @@
 import os
 import requests
+from dotenv import load_dotenv
 
 
 API_URL = "https://api.api-ninjas.com/v1/animals"
-API_KEY = "5R3wWRUlGy8ka6ArNl8fr94iixJ4Lh0OjkAvBqNW"
 
 
-def fetch_animals_data(name):
+def fetch_animals_data(name, api_key):
     """Fetch and return animal data from API Ninjas."""
     response = requests.get(
         API_URL,
-        headers={"X-Api-Key": API_KEY},
+        headers={"X-Api-Key": api_key},
         params={"name": name},
         timeout=10,
     )
@@ -91,16 +91,19 @@ def build_message_card(message):
 
 
 def main():
-    template_html = load_template("animals_template.html")
-    name = "fox"
+    load_dotenv()
 
-    if not API_KEY:
+    template_html = load_template("animals_template.html")
+    name = os.getenv("ANIMAL_QUERY", "fox")
+    api_key = os.getenv("API_NINJAS_API_KEY")
+
+    if not api_key:
         animals_info = build_message_card(
             "Set API_NINJAS_API_KEY to fetch animals from API Ninjas."
         )
     else:
         try:
-            animals_data = fetch_animals_data(name)
+            animals_data = fetch_animals_data(name, api_key)
             animals_info = (
                 serialize_animals(animals_data)
                 if animals_data
