@@ -1,10 +1,21 @@
-import json
+import os
+import requests
 
 
-def load_data(file_path):
-    """Load and return JSON data from a file."""
-    with open(file_path, "r", encoding="utf-8") as handle:
-        return json.load(handle)
+API_URL = "https://api.api-ninjas.com/v1/animals"
+API_KEY = "5R3wWRUlGy8ka6ArNl8fr94iixJ4Lh0OjkAvBqNW"
+
+
+def fetch_animals_data(name):
+    """Fetch and return animal data from API Ninjas."""
+    response = requests.get(
+        API_URL,
+        headers={"X-Api-Key": API_KEY},
+        params={"name": name},
+        timeout=10,
+    )
+    response.raise_for_status()
+    return response.json()
 
 
 def load_template(file_path):
@@ -67,11 +78,37 @@ def serialize_animals(animals_data):
     return "\n".join(block for block in animal_blocks if block)
 
 
-def main():
-    animals_data = load_data("animals_data.json")
-    template_html = load_template("animals_template.html")
+def build_message_card(message):
+    """Return a single card item with an informational message."""
+    return (
+        "<li class=\"cards__item\">\n"
+        "  <div class=\"card__title\">Notice</div>\n"
+        "  <p class=\"card__text\">\n"
+        f"      {message}<br/>\n"
+        "  </p>\n"
+        "</li>"
+    )
 
-    animals_info = serialize_animals(animals_data)
+
+def main():
+    template_html = load_template("animals_template.html")
+    name = "fox"
+
+    if not API_KEY:
+        animals_info = build_message_card(
+            "Set API_NINJAS_API_KEY to fetch animals from API Ninjas."
+        )
+    else:
+        try:
+            animals_data = fetch_animals_data(name)
+            animals_info = (
+                serialize_animals(animals_data)
+                if animals_data
+                else build_message_card(f"No animals found for '{name}'.")
+            )
+        except requests.RequestException as error:
+            animals_info = build_message_card(f"API request failed: {error}")
+
     final_html = template_html.replace("__REPLACE_ANIMALS_INFO__", animals_info)
 
     with open("animals.html", "w", encoding="utf-8") as output_file:
