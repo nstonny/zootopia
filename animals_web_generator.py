@@ -3,21 +3,7 @@ from html import escape
 
 import requests
 from dotenv import load_dotenv
-
-
-API_URL = "https://api.api-ninjas.com/v1/animals"
-
-
-def fetch_animals_data(name, api_key):
-    """Fetch and return animal data from API Ninjas."""
-    response = requests.get(
-        API_URL,
-        headers={"X-Api-Key": api_key},
-        params={"name": name},
-        timeout=10,
-    )
-    response.raise_for_status()
-    return response.json()
+from data_fetcher import fetch_data
 
 
 def load_template(file_path):
@@ -124,7 +110,7 @@ def main():
         )
     else:
         try:
-            animals_data = fetch_animals_data(name, api_key)
+            animals_data = fetch_data(name)
             animals_info = (
                 serialize_animals(animals_data)
                 if animals_data
@@ -137,6 +123,8 @@ def main():
 
     with open("animals.html", "w", encoding="utf-8") as output_file:
         output_file.write(final_html)
+
+    print("Website was successfully generated to the file animals.html.")
 
 if __name__ == "__main__":
     main()
